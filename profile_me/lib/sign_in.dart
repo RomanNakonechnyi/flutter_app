@@ -1,7 +1,10 @@
+import 'dart:isolate';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:profile_me/home.dart';
 import 'package:profile_me/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
   final String login = "roma";
@@ -14,10 +17,22 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
 
   AuthMode _authMode = AuthMode.SIGNIN;
-
+  SharedPreferences _preferences;
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
   double screenHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((SharedPreferences sp) {
+      sp.setString("password", "123456");
+      sp.setString("login", "roma");
+      setState(() {
+      });
+    });
+  }
+
   @override
   void dispose() {
     loginTextController.dispose();
@@ -26,7 +41,8 @@ class _SignInState extends State<SignIn> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
+
     screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -168,7 +184,8 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  void _executeLogin() {
+  void _executeLogin() async {
+    _preferences = await SharedPreferences.getInstance();
     if(loginTextController.text == widget.login && 
         passwordTextController.text == widget.password){
       Navigator.push(
@@ -177,7 +194,7 @@ class _SignInState extends State<SignIn> {
     }else{
       showDialog(context: context,
       child: AlertDialog(
-        content: Text("Incorrect email and password"),
+        content: Text(_preferences.getString("password")),
       ));
     }
   }
