@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:profile_me/home.dart';
+import 'package:profile_me/main.dart';
 
 class SignIn extends StatefulWidget {
   final String login = "roma";
@@ -9,6 +12,9 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+
+  AuthMode _authMode = AuthMode.SIGNIN;
+
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
   double screenHeight;
@@ -28,7 +34,9 @@ class _SignInState extends State<SignIn> {
         child: Stack(
           children: <Widget>[
             lowerBackgroundImage(context),
-            loginCard(context)
+            _authMode == AuthMode.SIGNIN
+            ? loginCard(context)
+                : registrationCard(context),
           ],
         ),
       ),
@@ -69,7 +77,7 @@ class _SignInState extends State<SignIn> {
                   TextFormField(
                     controller: loginTextController,
                     decoration: InputDecoration(
-                        labelStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.green,letterSpacing: 3),
                         labelText: "Your Email", floatingLabelBehavior: FloatingLabelBehavior.auto),
                     style: TextStyle(color: Colors.black),
                   ),
@@ -79,7 +87,7 @@ class _SignInState extends State<SignIn> {
                   TextFormField(
                     controller: passwordTextController,
                     decoration: InputDecoration(
-                        labelStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.green,letterSpacing: 3),
                         labelText: "Password", floatingLabelBehavior: FloatingLabelBehavior.auto),
                     style: TextStyle(color: Colors.black),
                   ),
@@ -111,14 +119,7 @@ class _SignInState extends State<SignIn> {
                             left: 38, right: 38, top: 15, bottom: 15),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)),
-                        onPressed: () {
-                          return showDialog(context: context,
-                          builder: (context){
-                            return AlertDialog(
-                              content: Text(loginTextController.text + " " + passwordTextController.text ),
-                            );
-                          });
-                        },
+                        onPressed: _executeLogin,
                       )
                     ],
                   )
@@ -140,14 +141,17 @@ class _SignInState extends State<SignIn> {
             ),
             FlatButton(
               onPressed: () {
-
+                  setState(() {
+                    _authMode = AuthMode.SINGUP;
+                  });
               },
               textColor: Colors.white,
               child: Text("Create Account",
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2
-                ),),
+                ),
+              ),
             )
           ],
         )
@@ -161,6 +165,153 @@ class _SignInState extends State<SignIn> {
       child: Image.asset('assets/images/man_on_bridge.jpg',
           filterQuality: FilterQuality.high,
           fit: BoxFit.cover),
+    );
+  }
+
+  void _executeLogin() {
+    if(loginTextController.text == widget.login && 
+        passwordTextController.text == widget.password){
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context)=> Home()));
+    }else{
+      showDialog(context: context,
+      child: AlertDialog(
+        content: Text("Incorrect email and password"),
+      ));
+    }
+  }
+
+
+  Widget registrationCard(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(top: screenHeight / 5),
+          padding: EdgeInsets.only(left: 10, right: 10),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 30,
+            child: Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "Create Account",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        labelStyle: TextStyle(letterSpacing: 3),
+                        labelText: "Your Name", floatingLabelBehavior: FloatingLabelBehavior.auto),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        labelStyle: TextStyle(letterSpacing: 3),
+                        labelText: "Your Email", floatingLabelBehavior: FloatingLabelBehavior.auto),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        labelStyle: TextStyle(letterSpacing: 3),
+                        labelText: "Password", floatingLabelBehavior: FloatingLabelBehavior.auto),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    "Password must be at least 8 characters and include a special character and number",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(),
+                      ),
+                      RaisedButton(
+                        elevation: 15,
+                        child: Text("Sign Up",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                        ),
+                        color: Color(0xFF4B9DFE),
+                        textColor: Colors.white,
+                        padding: EdgeInsets.only(
+                            left: 38, right: 38, top: 15, bottom: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              height: 40,
+            ),
+            Text(
+              "Already have an account?",
+              style: TextStyle(color: Colors.white),
+            ),
+            FlatButton(
+              onPressed: () {
+                setState(() {
+                  _authMode = AuthMode.SIGNIN;
+                });
+              },
+              textColor: Colors.white,
+              child: Text("Login",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2
+                ),
+              ),
+            )
+          ],
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: FlatButton(
+            child: Text(
+              "Terms & Conditions",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            onPressed: () {},
+          ),
+        ),
+      ],
     );
   }
 }
