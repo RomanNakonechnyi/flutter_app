@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:profile_me/helpers/settings.dart';
 import 'package:profile_me/home.dart';
 import 'package:profile_me/main.dart';
+import 'package:profile_me/models/credentials.dart';
+import 'package:profile_me/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
@@ -15,12 +20,19 @@ class _SignInState extends State<SignIn> {
 
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
+  final yourNameTextController = new TextEditingController();
+  final yourEmailTextController = new TextEditingController();
+  final yourPasswordTextController = new TextEditingController();
+
   double screenHeight;
 
   @override
   void dispose() {
     loginTextController.dispose();
     passwordTextController.dispose();
+    yourNameTextController.dispose();
+    yourEmailTextController.dispose();
+    yourPasswordTextController.dispose();
     super.dispose();
   }
 
@@ -170,11 +182,22 @@ class _SignInState extends State<SignIn> {
 
   void _executeLogin() async {
     _preferences = await SharedPreferences.getInstance();
-    if(loginTextController.text == _preferences.getString("login") &&
-        passwordTextController.text == _preferences.getString("password")){
+
+    User user = User.fromJson(jsonDecode(_preferences.getString('user')));
+
+    if(user == null){
+      showDialog(context: context,
+          child: AlertDialog(
+            content: Text("Incorrect credentials..."),
+          ));
+      return;
+    }
+    if(loginTextController.text == user.login &&
+        passwordTextController.text == user.password){
+      Settings.currentUser = user;
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context)=> Home()));
+          context,
+          MaterialPageRoute(builder: (context)=> Home()));
     }else{
       showDialog(context: context,
       child: AlertDialog(
@@ -215,6 +238,7 @@ class _SignInState extends State<SignIn> {
                     height: 15,
                   ),
                   TextFormField(
+                    controller: yourNameTextController,
                     decoration: InputDecoration(
                         labelStyle: TextStyle(letterSpacing: 3),
                         labelText: "Your Name", floatingLabelBehavior: FloatingLabelBehavior.auto),
@@ -223,6 +247,7 @@ class _SignInState extends State<SignIn> {
                     height: 15,
                   ),
                   TextFormField(
+                    controller: yourEmailTextController,
                     decoration: InputDecoration(
                         labelStyle: TextStyle(letterSpacing: 3),
                         labelText: "Your Email", floatingLabelBehavior: FloatingLabelBehavior.auto),
@@ -231,6 +256,7 @@ class _SignInState extends State<SignIn> {
                     height: 20,
                   ),
                   TextFormField(
+                    controller: yourPasswordTextController,
                     decoration: InputDecoration(
                         labelStyle: TextStyle(letterSpacing: 3),
                         labelText: "Password", floatingLabelBehavior: FloatingLabelBehavior.auto),
@@ -264,7 +290,7 @@ class _SignInState extends State<SignIn> {
                             left: 38, right: 38, top: 15, bottom: 15),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)),
-                        onPressed: () {},
+                        onPressed: _executeRegistration,
                       ),
                     ],
                   ),
@@ -314,5 +340,13 @@ class _SignInState extends State<SignIn> {
         ),
       ],
     );
+  }
+
+  void _executeRegistration() async{
+    var prefs = await SharedPreferences.getInstance();
+    var newUser = User(fullName:yourNameTextController.text,login: yourEmailTextController.text,password: yourPasswordTextController.text);
+
+    String jsonUser = jsonEncode(newUser);
+    prefs.setString("user", jsonUser);
   }
 }
