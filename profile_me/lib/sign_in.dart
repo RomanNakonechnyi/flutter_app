@@ -1,15 +1,9 @@
-import 'dart:isolate';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:profile_me/home.dart';
 import 'package:profile_me/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
-  final String login = "roma";
-  final String password = "123456";
-
   @override
   _SignInState createState() => _SignInState();
 }
@@ -18,20 +12,10 @@ class _SignInState extends State<SignIn> {
 
   AuthMode _authMode = AuthMode.SIGNIN;
   SharedPreferences _preferences;
+
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
   double screenHeight;
-
-  @override
-  void initState() {
-    super.initState();
-    SharedPreferences.getInstance().then((SharedPreferences sp) {
-      sp.setString("password", "123456");
-      sp.setString("login", "roma");
-      setState(() {
-      });
-    });
-  }
 
   @override
   void dispose() {
@@ -186,15 +170,15 @@ class _SignInState extends State<SignIn> {
 
   void _executeLogin() async {
     _preferences = await SharedPreferences.getInstance();
-    if(loginTextController.text == widget.login && 
-        passwordTextController.text == widget.password){
+    if(loginTextController.text == _preferences.getString("login") &&
+        passwordTextController.text == _preferences.getString("password")){
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context)=> Home()));
     }else{
       showDialog(context: context,
       child: AlertDialog(
-        content: Text(_preferences.getString("password")),
+        content: Text("Incorrect credentials..."),
       ));
     }
   }
@@ -204,8 +188,8 @@ class _SignInState extends State<SignIn> {
     return Column(
       children: <Widget>[
         Container(
-          margin: EdgeInsets.only(top: screenHeight / 5),
-          padding: EdgeInsets.only(left: 10, right: 10),
+          margin: EdgeInsets.only(top: screenHeight / 4),
+          padding: EdgeInsets.only(left: 15, right: 15),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
