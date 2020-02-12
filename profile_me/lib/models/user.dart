@@ -1,5 +1,3 @@
-import 'credentials.dart';
-
 class User{
   final String fullName;
   final String password;

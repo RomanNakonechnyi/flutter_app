@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
 import 'package:profile_me/home.dart';
 import 'package:profile_me/main.dart';
-import 'package:profile_me/models/credentials.dart';
 import 'package:profile_me/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/strings.dart';
 
 class SignIn extends StatefulWidget {
   @override
@@ -16,7 +17,6 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
 
   AuthMode _authMode = AuthMode.SIGNIN;
-  SharedPreferences _preferences;
 
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
@@ -181,9 +181,9 @@ class _SignInState extends State<SignIn> {
   }
 
   void _executeLogin() async {
-    _preferences = await SharedPreferences.getInstance();
+    var prefs = await SharedPreferences.getInstance();
 
-    User user = User.fromJson(jsonDecode(_preferences.getString('user')));
+    User user = User.fromJson(jsonDecode(prefs.getString(Strings.user)));
 
     if(user == null){
       showDialog(context: context,
@@ -195,9 +195,7 @@ class _SignInState extends State<SignIn> {
     if(loginTextController.text == user.login &&
         passwordTextController.text == user.password){
       Settings.currentUser = user;
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context)=> Home()));
+      navigateToHomePage(context);
     }else{
       showDialog(context: context,
       child: AlertDialog(
@@ -344,9 +342,20 @@ class _SignInState extends State<SignIn> {
 
   void _executeRegistration() async{
     var prefs = await SharedPreferences.getInstance();
-    var newUser = User(fullName:yourNameTextController.text,login: yourEmailTextController.text,password: yourPasswordTextController.text);
+    var newUser = User(
+        fullName:yourNameTextController.text,
+        login: yourEmailTextController.text,
+        password: yourPasswordTextController.text
+    );
 
-    String jsonUser = jsonEncode(newUser);
-    prefs.setString("user", jsonUser);
+    prefs.setString(Strings.user, jsonEncode(newUser));
+    Settings.currentUser = newUser;
+    navigateToHomePage(context);
+  }
+
+  void navigateToHomePage(BuildContext context){
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context)=> Home()));
   }
 }
