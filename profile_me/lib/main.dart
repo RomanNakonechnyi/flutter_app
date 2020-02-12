@@ -8,62 +8,57 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/strings.dart';
 import 'home.dart';
-void main() => runApp(MyApp());
-//Future<Null> main() async {
-//  WidgetsFlutterBinding.ensureInitialized();
-//  LocalStorageService._preferences = await SharedPreferences.getInstance();
-//  print(LocalStorageService._preferences);
-//
-//
-//  runApp(new MyApp());
-//}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  var sp = await SharedPreferences.getInstance();
+  for(var key in sp.getKeys()){
+    print(sp.get(key));
+  }
+  runApp(MyApp(prefs:sp));
+}
 
 enum AuthMode { SIGNIN, SINGUP }
+
 class MyApp extends StatelessWidget {
+  SharedPreferences prefs;
+  MyApp({this.prefs});
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context){
     return new MaterialApp(
-      home:SplashScreen()
+      home:SplashScreen(prefs:prefs)
     );
   }
 }
 
 
 class SplashScreen extends StatefulWidget {
+  final SharedPreferences prefs;
+  SplashScreen({this.prefs});
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-
-    LocalStorageService.getInstance();
-
-
-    super.initState();
-  }
 
   bool checkIfAnyKeysInStorage(){
     var anyKeys = false;
-    print(LocalStorageService._preferences);
-    anyKeys = LocalStorageService._preferences.getKeys().length > 0;
+    anyKeys = widget.prefs.getKeys().length > 0;
     return anyKeys;
   }
 
   bool checkUserInStorage() {
     bool hasUser = false;
-    if(LocalStorageService._preferences.containsKey(Strings.user)){
-      hasUser = LocalStorageService._preferences.getString(Strings.user) != "";
+    if(widget.prefs.containsKey(Strings.user)){
+      hasUser = widget.prefs.getString(Strings.user) != "";
     }
     return hasUser;
   }
 
   bool checkIfPasscodeTimeIsValid() {
     bool passcodeIsValid = false;
-    if(LocalStorageService._preferences.containsKey(Strings.lastTimeQuit)){
-      passcodeIsValid = (DateTime.now().millisecondsSinceEpoch - LocalStorageService._preferences.getInt(Strings.lastTimeQuit) )
+    if(widget.prefs.containsKey(Strings.lastTimeQuit)){
+      passcodeIsValid = (DateTime.now().millisecondsSinceEpoch - widget.prefs.getInt(Strings.lastTimeQuit) )
           < Settings.allowedRelogTimeWithoutPassCodeMilliseconds;
     }
     return passcodeIsValid;
@@ -84,9 +79,6 @@ class _SplashScreenState extends State<SplashScreen> {
     );
 
     return loginPage;
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context)=> SignIn()));
   }
 
   Widget navigateToHomePage(BuildContext context){
@@ -94,25 +86,19 @@ class _SplashScreenState extends State<SplashScreen> {
       home: Home(),
     );
     return homePage;
-    Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context)=> Home()));
   }
 
   Widget navigatePasscodePage(BuildContext context) {
     var passcodePage = MaterialApp(
       home: PasscodePage(),
     );
-return passcodePage;
-//    Navigator.push(
-//        context,
-//        MaterialPageRoute(builder: (context)=> PasscodePage()));
+    return passcodePage;
   }
 
   @override
   Widget build(BuildContext context) {
 
-    print(LocalStorageService._preferences);
+    print(widget.prefs);
     bool keysIsPresent = checkIfAnyKeysInStorage();
 
     if(!keysIsPresent){
