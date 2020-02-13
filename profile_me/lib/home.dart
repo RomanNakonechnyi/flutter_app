@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 import 'helpers/settings.dart';
 import 'helpers/strings.dart';
@@ -23,6 +24,9 @@ class _HomeState extends State<Home> {
             new RaisedButton(onPressed: _executeLogOut,
             child: Text("LOG OUT"),
             ),
+            new RaisedButton(onPressed: _fetchData,
+              child: Text("LOG OUT"),
+            ),
           ],
         ),
       ),
@@ -44,5 +48,22 @@ class _HomeState extends State<Home> {
     var prefs = await SharedPreferences.getInstance();
     prefs.setString(Strings.user, '');
     prefs.setInt(Strings.lastTimeQuit, 0);
+  }
+
+  void _fetchData() async{
+    var client = http.Client();
+    try {
+      http.Response response = await client.get(
+          "https://wordsapiv1.p.rapidapi.com/words/birthday",
+          headers: {
+            'x-rapidapi-host':'wordsapiv1.p.rapidapi.com',
+            'x-rapidapi-key':'<YOUR_API_KEY_FROM_RAPID_API>'
+          }
+      );
+
+      print(response.body);
+    }finally{
+      client.close();
+    }
   }
 }
