@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
-import 'package:profile_me/home.dart';
 import 'package:profile_me/main.dart';
 import 'package:profile_me/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -195,6 +194,7 @@ class _SignInState extends State<SignIn> {
     if(loginTextController.text == user.login &&
         passwordTextController.text == user.password){
       Settings.currentUser = user;
+      setCurrentTimeAsLastLogged();
       navigateToHomePage(context);
     }else{
       showDialog(context: context,
@@ -350,12 +350,16 @@ class _SignInState extends State<SignIn> {
 
     prefs.setString(Strings.user, jsonEncode(newUser));
     Settings.currentUser = newUser;
+    setCurrentTimeAsLastLogged();
     navigateToHomePage(context);
   }
 
   void navigateToHomePage(BuildContext context){
-    Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context)=> Home()));
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  void setCurrentTimeAsLastLogged() async{
+    var prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(Strings.lastTimeQuit, DateTime.now().millisecondsSinceEpoch);
   }
 }

@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/strings.dart';
 import 'home.dart';
+import 'models/user.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var sp = await SharedPreferences.getInstance();
@@ -26,11 +27,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context){
     return new MaterialApp(
-      home:SplashScreen(prefs:prefs)
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SplashScreen(prefs:prefs),
+        '/signIn':(context) => SignIn(),
+        '/home' : (context) => Home()
+      }
     );
   }
 }
-
 
 class SplashScreen extends StatefulWidget {
   final SharedPreferences prefs;
@@ -72,33 +77,23 @@ class _SplashScreenState extends State<SplashScreen> {
           currentFocus.unfocus();
         }
       },
-      child:  MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SignIn(),
-      ),
-    );
+      child: SignIn()
+      );
 
     return loginPage;
   }
 
   Widget navigateToHomePage(BuildContext context){
-    var homePage = MaterialApp(
-      home: Home(),
-    );
-    return homePage;
+    Settings.currentUser = User.fromJson(jsonDecode(widget.prefs.getString(Strings.user)));
+    return Home();
   }
 
   Widget navigatePasscodePage(BuildContext context) {
-    var passcodePage = MaterialApp(
-      home: PasscodePage(),
-    );
-    return passcodePage;
+    return PasscodePage();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    print(widget.prefs);
     bool keysIsPresent = checkIfAnyKeysInStorage();
 
     if(!keysIsPresent){
@@ -116,23 +111,6 @@ class _SplashScreenState extends State<SplashScreen> {
     }else{
       return navigatePasscodePage(context);
     }
-  }
-}
-
-class LocalStorageService {
-  static LocalStorageService _instance;
-  static SharedPreferences _preferences;
-
-  static Future<LocalStorageService> getInstance() async {
-    if (_instance == null) {
-      _instance = LocalStorageService();
-    }
-
-    if (_preferences == null) {
-      _preferences = await SharedPreferences.getInstance();
-    }
-
-    return _instance;
   }
 }
 

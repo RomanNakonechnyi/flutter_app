@@ -2,15 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
-import 'package:profile_me/home.dart';
-import 'package:profile_me/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/strings.dart';
 import 'models/user.dart';
 
 class PasscodePage extends StatelessWidget {
-  static const int allowedAttempts = 2;
+  static final int allowedAttempts = 2;
   int _attemptsMade = 0;
   @override
   Widget build(BuildContext context) {
@@ -24,17 +22,13 @@ class PasscodePage extends StatelessWidget {
           onChanged: (value) async{
             if(value.length == 4){
               if(_attemptsMade >= allowedAttempts){
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context)=> SignIn()));
+                  Navigator.pushNamed(context, '/signIn');
+                  return;
               }
               if(await checkIfPasscodeValid(value)){
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context)=> Home()));
-                    return;
+                Navigator.pushReplacementNamed(context, '/home');
+                return;
               }
-              value = '';
             }
           },
         ),
