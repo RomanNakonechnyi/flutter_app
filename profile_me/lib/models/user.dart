@@ -1,20 +1,29 @@
 class User{
+  final int id;
   final String fullName;
   final String password;
   final String login;
-  User({this.fullName, this.password, this.login});
+  User({this.id,this.fullName, this.password, this.login});
 
   factory User.fromJson(Map<String, dynamic> json){
     return new User(
-        fullName: json['name'],
+        id: json['id'],
+        fullName: json['fullName'],
         password: json['password'],
         login: json['login'],
     );
   }
-  Map<String, dynamic> toJson() =>
+
+  Map<String,dynamic> toJson() =>
       {
-        'name': fullName,
+        'id': id,
+        'fullName': fullName,
         'password': password,
         'login': login
       };
+
+  @override
+  String toString() {
+    return 'User{id: $id, name: $fullName, password: $password, login: $login}';
+  }
 }

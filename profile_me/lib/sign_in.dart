@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
 import 'package:profile_me/main.dart';
 import 'package:profile_me/models/user.dart';
+import 'package:profile_me/services/databaseService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/strings.dart';
@@ -16,6 +17,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
 
   AuthMode _authMode = AuthMode.SIGNIN;
+  DatabaseService _db;
 
   final loginTextController = new TextEditingController();
   final passwordTextController = new TextEditingController();
@@ -26,13 +28,13 @@ class _SignInState extends State<SignIn> {
   double screenHeight;
 
   @override
-  void dispose() {
-    loginTextController.dispose();
-    passwordTextController.dispose();
-    yourNameTextController.dispose();
-    yourEmailTextController.dispose();
-    yourPasswordTextController.dispose();
-    super.dispose();
+  void initState() {
+    initializeFields();
+    super.initState();
+  }
+
+  void initializeFields() async{
+    _db = await DatabaseService.getInstance();
   }
 
   @override
@@ -179,32 +181,6 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  void _executeLogin() async {
-    var prefs = await SharedPreferences.getInstance();
-
-    User user = User.fromJson(jsonDecode(prefs.getString(Strings.user)));
-
-    if(user == null){
-      showDialog(context: context,
-          child: AlertDialog(
-            content: Text("Incorrect credentials..."),
-          ));
-      return;
-    }
-    if(loginTextController.text == user.login &&
-        passwordTextController.text == user.password){
-      Settings.currentUser = user;
-      setCurrentTimeAsLastLogged();
-      navigateToHomePage(context);
-    }else{
-      showDialog(context: context,
-      child: AlertDialog(
-        content: Text("Incorrect credentials..."),
-      ));
-    }
-  }
-
-
   Widget registrationCard(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -278,9 +254,9 @@ class _SignInState extends State<SignIn> {
                       RaisedButton(
                         elevation: 15,
                         child: Text("Sign Up",
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
                         ),
                         color: Color(0xFF4B9DFE),
                         textColor: Colors.white,
@@ -340,6 +316,34 @@ class _SignInState extends State<SignIn> {
     );
   }
 
+  void _executeLogin() async {
+    User user;
+    var login = loginTextController.text;
+    var password = passwordTextController.text;
+    var users = await _db.getUsers();
+    users.forEach((element) {print(element.fullName);});
+
+    var userExists = users.any(
+            (user)=> user.password == password
+            && user.login == login);
+    print(userExists);
+    if(!userExists){
+      showDialog(context: context,
+          child: AlertDialog(
+            content: Text("There is no such user, please check credentials or create new user"),
+          ));
+      return;
+    }
+
+    user = users.firstWhere(
+            (user)=> user.password == password
+            && user.login == login);
+
+    Settings.currentUser = user;
+    setCurrentTimeAsLastLogged();
+    navigateToHomePage(context);
+  }
+
   void _executeRegistration() async{
     var prefs = await SharedPreferences.getInstance();
     var newUser = User(
@@ -348,6 +352,7 @@ class _SignInState extends State<SignIn> {
         password: yourPasswordTextController.text
     );
 
+    await _db.createUser(newUser);
     prefs.setString(Strings.user, jsonEncode(newUser));
     Settings.currentUser = newUser;
     setCurrentTimeAsLastLogged();
@@ -362,4 +367,15 @@ class _SignInState extends State<SignIn> {
     var prefs = await SharedPreferences.getInstance();
     await prefs.setInt(Strings.lastTimeQuit, DateTime.now().millisecondsSinceEpoch);
   }
+
+  @override
+  void dispose() {
+    loginTextController.dispose();
+    passwordTextController.dispose();
+    yourNameTextController.dispose();
+    yourEmailTextController.dispose();
+    yourPasswordTextController.dispose();
+    super.dispose();
+  }
+
 }
