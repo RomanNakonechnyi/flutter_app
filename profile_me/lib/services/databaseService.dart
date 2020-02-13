@@ -14,18 +14,20 @@ class DatabaseService{
    static const _dbName = 'user_database.db';
 
   Future<Database> getDatabase()async{
-    return openDatabase(
-        join(await getDatabasesPath(),_dbName),
+    print(join(await getDatabasesPath(), _dbName));
+    return openDatabase(join(await getDatabasesPath(),_dbName),
     onCreate: (db,version){
           return db.execute(
-            "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, fullName TEXT, password TEXT, login TEXT)",
+            "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, fullname TEXT, password TEXT, login TEXT)",
           );
     },
-    version: 2);
+    version: 1);
   }
 
   Future<void> createUser(User user) async{
     final Database db = await getDatabase();
+
+
     await db.insert(
       'users',
       user.toJson(),
@@ -42,12 +44,7 @@ class DatabaseService{
 
     // Convert the List<Map<String, dynamic> into a List<User>.
     return List.generate(maps.length, (i) {
-      return User(
-        id: maps[i]['id'],
-        fullName: maps[i]['name'],
-        password: maps[i]['password'],
-        login: maps[i]['login']
-      );
+      return User.fromJson(maps[i]);
     });
   }
 }

@@ -321,7 +321,7 @@ class _SignInState extends State<SignIn> {
     var login = loginTextController.text;
     var password = passwordTextController.text;
     var users = await _db.getUsers();
-    users.forEach((element) {print(element.fullName);});
+    users.forEach((element) {print(element.toString());});
 
     var userExists = users.any(
             (user)=> user.password == password

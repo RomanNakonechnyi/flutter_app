@@ -8,7 +8,7 @@ class User{
   factory User.fromJson(Map<String, dynamic> json){
     return new User(
         id: json['id'],
-        fullName: json['fullName'],
+        fullName: json['fullname'],
         password: json['password'],
         login: json['login'],
     );
@@ -17,13 +17,13 @@ class User{
   Map<String,dynamic> toJson() =>
       {
         'id': id,
-        'fullName': fullName,
+        'fullname': fullName,
         'password': password,
         'login': login
       };
 
   @override
   String toString() {
-    return 'User{id: $id, name: $fullName, password: $password, login: $login}';
+    return 'User(id: $id, name: $fullName, password: $password, login: $login)';
   }
 }
