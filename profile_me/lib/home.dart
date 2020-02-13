@@ -20,7 +20,9 @@ class _HomeState extends State<Home> {
         child: Column(
           children: <Widget>[
             new Text(Settings.currentUser.fullName + Settings.currentUser.login),
-            new RaisedButton(onPressed: _executeLogOut),
+            new RaisedButton(onPressed: _executeLogOut,
+            child: Text("LOGOUT"),
+            ),
           ],
         ),
       ),

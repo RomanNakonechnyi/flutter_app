@@ -1,14 +1,13 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:profile_me/helpers/settings.dart';
 import 'package:profile_me/passcodePage.dart';
 import 'package:profile_me/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'helpers/strings.dart';
 import 'home.dart';
 import 'models/user.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var sp = await SharedPreferences.getInstance();
