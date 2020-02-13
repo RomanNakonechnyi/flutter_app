@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
           children: <Widget>[
             new Text(Settings.currentUser.fullName + Settings.currentUser.login),
             new RaisedButton(onPressed: _executeLogOut,
-            child: Text("LOGOUT"),
+            child: Text("LOG OUT"),
             ),
           ],
         ),
