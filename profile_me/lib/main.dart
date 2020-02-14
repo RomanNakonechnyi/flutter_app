@@ -26,6 +26,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context){
     return new MaterialApp(
+      theme: ThemeData(
+        primaryColorDark: Colors.blue,
+        accentColor: Colors.blue,
+
+      ),
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(prefs:prefs),

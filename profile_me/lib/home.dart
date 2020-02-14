@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:profile_me/models/SynonymModel.dart';
+import 'package:profile_me/services/apiService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 import 'helpers/settings.dart';
 import 'helpers/strings.dart';
@@ -12,36 +13,118 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  final List<String> synonyms = List<String>();
+  final TextEditingController synonymTextController = TextEditingController();
+
+  String notFindText;
+
+  bool firstStart = true;
+
+  @override
+  void dispose() {
+    synonymTextController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    body: Center(
-      child: Padding(
-        padding: const EdgeInsets.only(left:50.0,top:150.0,right:50.0,bottom:75.0),
-        child: Column(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.deepOrange,
+        leading: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: FlutterLogo(),
+        ),
+        title: new Text(Settings.currentUser.fullName ),
+        elevation: 25,
+        actions: <Widget>[
+          FlatButton(
+            child: Icon(
+              Icons.exit_to_app,
+              color: Colors.white,
+              size: 40,
+          ),
+            onPressed: _executeLogOut,
+          )
+        ],
+      ),
+    body: Column(
+      children: <Widget>[
+        Row(
           children: <Widget>[
-            new Text(Settings.currentUser.fullName + Settings.currentUser.login),
-            new RaisedButton(onPressed: _executeLogOut,
-            child: Text("LOG OUT"),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left:8.0,right: 8.0,bottom: 15),
+                child: new TextFormField(
+                  controller: synonymTextController,
+                  decoration: InputDecoration(
+                      labelStyle: TextStyle(letterSpacing: 3),
+                      labelText: "Word to find synonyms", floatingLabelBehavior: FloatingLabelBehavior.auto),
+                ),
+              ),
             ),
-            new RaisedButton(onPressed: _fetchData,
-              child: Text("LOG OUT"),
+            Padding(
+              padding: const EdgeInsets.only(right:10.0),
+              child: new RaisedButton(onPressed: _fetchData,
+                elevation: 5,
+                child: Text("search synonyms"),
+              ),
             ),
           ],
         ),
-      ),
-      ),
+        synonyms.length == 0? getLoadingOrErrorWidget()
+            : Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: synonyms.length,
+              itemBuilder: (BuildContext context, int index) {
+              return Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Container(
+                  height: 50,
+                  color: Colors.deepOrangeAccent,
+                  child: Center(
+                    child: Text('${synonyms[index]}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.white
+                      ),
+                    )
+                  ),
+                ),
+              );
+          }),
+              ),
+            )
+      ],
+    ),
     );
   }
 
   void _executeLogOut() {
     eraseInfo();
-    //Navigator.pushNamed(context, '/signIn');
     Navigator.pushNamedAndRemoveUntil(
         context,
         '/signIn',
         ModalRoute.withName('/')
     );
+  }
+
+  Widget getLoadingOrErrorWidget(){
+    if(firstStart){
+      return Container();
+    }
+    if(notFindText == ''){
+      return new CircularProgressIndicator(
+        backgroundColor: Colors.yellow,
+      );
+    }else{
+      return Text(notFindText);
+    }
   }
 
   void eraseInfo() async{
@@ -51,19 +134,22 @@ class _HomeState extends State<Home> {
   }
 
   void _fetchData() async{
-    var client = http.Client();
-    try {
-      http.Response response = await client.get(
-          "https://wordsapiv1.p.rapidapi.com/words/birthday",
-          headers: {
-            'x-rapidapi-host':'wordsapiv1.p.rapidapi.com',
-            'x-rapidapi-key':'<YOUR_API_KEY_FROM_RAPID_API>'
-          }
-      );
 
-      print(response.body);
-    }finally{
-      client.close();
+    setState(() {
+      firstStart = false;
+      synonyms.clear();
+      notFindText ='';
+    });
+    var apiService = await ApiService.getInstance();
+    SynonymModel synonym = await apiService.getSynonyms(synonymTextController.text);
+    if(synonym != null){
+      setState(() {
+        synonyms.addAll(synonym.synonyms);
+      });
+    }else{
+      setState(() {
+        notFindText = "No synonyms for ${synonymTextController.text} has been founded";
+      });
     }
   }
 }
